@@ -1,7 +1,7 @@
 ## Perceptron ##
 A simple, single-purpose Perceptron that can solve a linear equation of the form, y = mx + b
 
-## Requires Python 3.6 or greater ##
+## Requires Python 3.7 or greater ##
 
 Usage: python Perceptron.py --slope M --intercept I [--learn L] [--lowrange R] [--highrange R]
 
