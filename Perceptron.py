@@ -9,15 +9,17 @@ class Perceptron:
         - Is the lowest level unit of an artificial neural network. In this exmaple, the perceptron executes alone.
         - Has exactly one output.
         - Can have any number of inputs. In this case, it has 2 inputs,
-            to solve a linear equation in the form y = mx + b
-        - Has a weight for each input. The weight can be adjusted over time.
+            to solve a straight line equation in the form y = mx + b
+            where x and y are the inputs
+        - Has a weight for each input. The weights are initialized to random values and will be adjusted over
+            time as the perceptron is trained.
         - Has an optional bias, which allows you to offset the result by some amount.
             In this example, the bias is the y-intercept of a linear equation.
-            The bias does not change.
+            Once set, the bias does not change.
         - Has a learning rate, so that corrections are neither too large, nor too small.
-            The learning rate does not change.
+            Once set, the learning rate does not change.
     '''
-    def __init__(self, inputs: int=2, learning_rate: float=.01, bias: float=0.0, activation_function: Callable = None):
+    def __init__(self, inputs: int=2, learning_rate: float=.01, bias: float=0.0):
         '''
         Initializes a new perceptron.
         :param inputs: Number of inputs for this instance
@@ -29,20 +31,18 @@ class Perceptron:
         self.learning_rate = learning_rate
         # create a list of weights, 1 weight for each input
         self.weights = [0] * inputs
-        # initializat the weights to small, nonzero, random values
+        # initialize the weights to small, nonzero, random values
         for i in range(len(self.weights)):
             self.weights[i] = random.random() * 0.99 + .01  # sample from [0.01,1)
 
-        self.activate = activation_function
-
     def activate(self, value: float) -> float:
         '''
-        The activation function will be provided when the perceptron is created. That gives us
-        flexibility to use different activation functions for different problems.
-        :param value: the value to be tested by the activation function
-        :return: about 0 for one of the binary classification choices, or about 1 for the other choice.
+        This is the activation function. It returns the predicted result. In a neural network, this
+        would be a sigmoid or some similar differentiable function that returns a value in the range (0,1).
+        In the case of a single purpose perceptron, it is sufficient to use a simple step function
+        that returns 0 or 1, by comparing the incoming value to the bias (in this case, the y-intercept)
         '''
-        return None
+        return 0 if (value < self.bias) else 1
 
     def train(self, values: [], target: int):
         '''
@@ -64,7 +64,7 @@ class Perceptron:
         '''
         The perceptron can be tested by providing training data but no expected result.
         Each raw input is modified by the weight for that input, then the sum of the inputs
-        is passed to the activation function.
+        is passed to the activation function. The activation function decides how to classify the value.
         :param values: a list of input values, one for each weight
         :return: the result of the activation function
         '''
@@ -84,7 +84,7 @@ def usage():
     print('      guesses incorrectly. It should be a small value. Default is .005')
     print('   Lowrange: This is the low end of the range of generated X and Y values. Default is 0')
     print('   Highrange: This is the high end of the range of generated X and Y values. Default is 10')
-    print('Example: python Perceptron.py --slope 1.4 --intercept 5 --learn .005 --lowrange -100, --highrange=100')
+    print('Example: python Perceptron.py --slope 1.4 --intercept 5 --learn .005 --lowrange -100 --highrange=100')
     print('   In this example, the perceptron solves for the inequality 1.4x - y > 5')
     print('   Corrections to the weights are multiples of .005')
     print('   The range of randomly generated input data is [-100,100]')
@@ -121,18 +121,12 @@ def main():
     except Exception as e:
         usage()
 
-    """
-        We will provide the perceptron's activation function.
-        The acivation function returns the predicted result. In a neural network, this would be a sigmoid or
-        some similar differentiable function. In the case of a single purpose perceptron, it is sufficient
-        to use a simple step function that returns 0 or 1.
-    """
-    activation_function = lambda x: 0 if (x < intercept) else 1
-
-    perceptron = Perceptron(inputs = 2, bias=intercept, learning_rate=learn, activation_function=activation_function)
-    # f(x) = mx + b, where m is slope and b is intercept
-    # x, y values will come from the range [lowrange, highrange]
-    # errors will result in weights being adjusted by learn
+    perceptron = Perceptron(inputs = 2, bias=intercept, learning_rate=learn)
+    # f(x) = mx + b, where m is slope and b is the intercept
+    # The perceptron will know about the random X,Y values and the intercept (this is the bias parameter). But it
+    # will know nothing of the slope or the equation as a whole.
+    # x,y will come from random values in the range [lowrange, highrange]
+    # errors will result in weights being adjusted in train()
     i = 0
     count = 0
     while (count < 100):
@@ -157,4 +151,6 @@ def main():
         else:
             count = 0
     print ("Predicted result correctly {} times in a row, after {} attempts".format(count, i))
+
+
 main()
