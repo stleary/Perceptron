@@ -1,6 +1,6 @@
 import sys
 import getopt
-import numpy
+import random
 from typing import Callable
 
 class Perceptron:
@@ -31,7 +31,7 @@ class Perceptron:
         self.weights = [0] * inputs
         # initializat the weights to small, nonzero, random values
         for i in range(len(self.weights)):
-            self.weights[i] = numpy.random.random() * 0.99 + .01  # sample from [0.01,1)
+            self.weights[i] = random.random() * 0.99 + .01  # sample from [0.01,1)
 
         self.activate = activation_function
 
@@ -137,8 +137,8 @@ def main():
     count = 0
     while (count < 100):
         i += 1
-        x = numpy.random.random() * (highrange - lowrange - .01) + .01 + lowrange
-        y = numpy.random.random() * (highrange - lowrange - .01) + .01 + lowrange
+        x = random.random() * (highrange - lowrange - .01) + .01 + lowrange
+        y = random.random() * (highrange - lowrange - .01) + .01 + lowrange
         target = 0
         if y > (slope * x + intercept):
             target = 1
