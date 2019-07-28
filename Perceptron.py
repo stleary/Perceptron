@@ -1,7 +1,6 @@
 import sys
 import getopt
 import random
-from typing import Callable
 
 class Perceptron:
     '''
@@ -18,6 +17,7 @@ class Perceptron:
             Once set, the bias does not change.
         - Has a learning rate, so that corrections are neither too large, nor too small.
             Once set, the learning rate does not change.
+    Any perceptron should have methods for initialization, activate(), train(), and query()
     '''
     def __init__(self, inputs: int=2, learning_rate: float=.01, bias: float=0.0):
         '''
@@ -40,7 +40,10 @@ class Perceptron:
         This is the activation function. It returns the predicted result. In a neural network, this
         would be a sigmoid or some similar differentiable function that returns a value in the range (0,1).
         In the case of a single purpose perceptron, it is sufficient to use a simple step function
-        that returns 0 or 1, by comparing the incoming value to the bias (in this case, the y-intercept)
+        that returns 0 or 1, by comparing the incoming value to the bias (which in this case happens to
+        be the y-intercept.
+        :param value: sum of the weighted inputs
+        :return 0 or 1, depending on the binary classification
         '''
         return 0 if (value < self.bias) else 1
 
@@ -74,38 +77,46 @@ class Perceptron:
         return self.activate(weighted_sum)
 
 def usage():
-    print('Usage: python Perceptron --slope M --intercept I [--learn L] [--lowrange R] [--highrange R]')
-    print('This perceptron generates random X,Y pairs in the specified range and separates them according to a linear equation of the form y = mx + b')
-    print('   where x,y are the randomly generated values, m is the slope, and b is the y-intercept')
-    print('Parameters: Slope and intercept are required, learn, lowrange, and highrange are optional with default values')
-    print('   Slope: in the equation y = mx + b, slope is the m term')
-    print('   Intercept: in the equation y = mx + b, intercept is the b term')
+    print('Usage: python Perceptron -a A -b B [-c C] [--learn L] [--lowrange R] [--highrange S]')
+    print('This perceptron generates random X,Y pairs in the specified range and separates them according to a standard form straight line equation ax + by = c')
+    print('Parameters: x,y coefficients are required. The constant, learn, lowrange, and highrange values are optional')
+    print('   a: coefficient of X')
+    print('   b: coefficient of Y')
+    print('   c: constant term. Default is 0')
     print('   Learn: This is the learning rate, or how much the weights will change if the perceptron ')
     print('      guesses incorrectly. It should be a small value. Default is .005')
     print('   Lowrange: This is the low end of the range of generated X and Y values. Default is 0')
     print('   Highrange: This is the high end of the range of generated X and Y values. Default is 10')
-    print('Example: python Perceptron.py --slope 1.4 --intercept 5 --learn .005 --lowrange -100 --highrange=100')
-    print('   In this example, the perceptron solves for the inequality 1.4x - y > 5')
+    print('Example: python Perceptron.py -a 1.4 -b -5 -c 13 --learn .005 --lowrange -100 --highrange=100')
+    print('   In this example, the perceptron solves for the inequality 1.4x -5y > 13')
     print('   Corrections to the weights are multiples of .005')
     print('   The range of randomly generated input data is [-100,100]')
-    print('   The perceptron will learn to classify random X,Y values according to whether they satisfy the inequality, 1.4x - y > 5 ')
+    print('   The perceptron will learn to classify random X,Y values according to whether they satisfy the inequality, 1.4x -5y + 13 > 0')
     print('The program will terminate after it has guessed correctly 100 times in a row.')
     exit(2)
 
 
 def main():
-    slope = None
-    intercept = None
+    '''
+    Collect command line parameters, create Perceptron, train it until it can separate randomly generated x,y values
+    100 times in a row. Show the actual and learned formulas in y = mx + b format. If -v is used, let the user enter
+    some test x,y values.
+    '''
+    x_coefficient = None
+    y_coeffient = None
+    constant_term = 0
     learn = .005
     lowrange = 0
     highrange = 10
     try:
-        options, remainder = getopt.getopt(args=sys.argv[1:], shortopts='', longopts=['slope=', 'intercept=', 'learn=', 'lowrange=', 'highrange='])
+        options, remainder = getopt.getopt(args=sys.argv[1:], shortopts='a:b:c:', longopts=['learn=', 'lowrange=', 'highrange='])
         for opt, arg in options:
-            if opt in ('--slope'):
-                slope = float(arg)
-            elif opt in ('--intercept'):
-                intercept = float(arg)
+            if opt in ('-a'):
+                x_coefficient = float(arg)
+            elif opt in ('-b'):
+                y_coeffient = float(arg)
+            elif opt in ('-c'):
+                constant_term = float(arg)
             elif opt in ('--learn'):
                 learn = float(arg)
             elif opt in ('--lowrange'):
@@ -114,28 +125,28 @@ def main():
                 highrange = float(arg)
         if remainder:
             usage()
-        if not slope or not intercept:
+        if not x_coefficient or not y_coeffient:
             usage()
         if not highrange > lowrange:
             usage()
     except Exception as e:
         usage()
 
-    perceptron = Perceptron(inputs = 2, bias=intercept, learning_rate=learn)
-    # f(x) = mx + b, where m is slope and b is the intercept
-    # The perceptron will know about the random X,Y values and the intercept (this is the bias parameter). But it
-    # will know nothing of the slope or the equation as a whole.
-    # x,y will come from random values in the range [lowrange, highrange]
-    # errors will result in weights being adjusted in train()
+    # The perceptron only needs to know the y-intercept, which is the bias from the origin
+    y_intercept = constant_term / y_coeffient
+    slope = -1 * x_coefficient / y_coeffient
+    bias = -1 * y_intercept
+    perceptron = Perceptron(inputs=2, bias=bias, learning_rate=learn)
+
+    # x,y will be generated from random values in the range [lowrange, highrange] and used to train the perceptron
     i = 0
     count = 0
     while (count < 100):
         i += 1
         x = random.random() * (highrange - lowrange - .01) + .01 + lowrange
         y = random.random() * (highrange - lowrange - .01) + .01 + lowrange
-        target = 0
-        if y > (slope * x + intercept):
-            target = 1
+        # we have to know the intended result in order to perform the training
+        target = 1 if (x_coefficient * x + y_coeffient * y - constant_term > 0) else 0
         result = perceptron.train([x, y], target)
         print('{}. {} target: {} result: {} x: {} y: {} xwt {}  ywt {} {}'.
               format(i, str(result == target),
@@ -151,6 +162,16 @@ def main():
         else:
             count = 0
     print ("Predicted result correctly {} times in a row, after {} attempts".format(count, i))
+    calculated_y_intercept = constant_term / perceptron.weights[1]
+    calculated_slope = -1 * perceptron.weights[0] / perceptron.weights[1]
+    print('Actual  slope/intercept form : y = {}x {} {}'.format(round(slope,1),
+                                                                    '+' if y_intercept > 0 else '-',
+                                                                    round(abs(y_intercept),1)))
+    print('Learned slope/intercept form : y = {}x {} {}'.format(round(calculated_slope,1),
+                                                                    '+' if calculated_y_intercept + constant_term > 0 else '-',
+                                                                    round(abs(calculated_y_intercept + constant_term),1)))
+
+
 
 
 main()
