@@ -16,9 +16,9 @@ Parameters: x,y coefficients are required. The constant, learn, lowrange, and hi
 * Highrange: This is the high end of the range of generated X and Y values. Default is 10
 
 Example: python Perceptron.py -a 1.4 -b -5 -c 13 --learn .005 --lowrange -100 --highrange=100
-* In this example, the perceptron solves for the inequality 1.4x -5y > 13
+* In this example, the perceptron solves for the inequality 1.4x -5y - 13 > 0
 * Corrections to the weights are multiples of .005
 * The range of randomly generated input data is [-100,100]
-* The perceptron will learn to classify random X,Y values according to whether they satisfy the inequality, 1.4x -5y + 13 > 0
+* The perceptron will learn to classify random X,Y values according to whether they satisfy the inequality, 1.4x -5y - 13 > 0
 
 The program will terminate after it has guessed correctly 100 times in a row.
