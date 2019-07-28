@@ -88,10 +88,10 @@ def usage():
     print('   Lowrange: This is the low end of the range of generated X and Y values. Default is 0')
     print('   Highrange: This is the high end of the range of generated X and Y values. Default is 10')
     print('Example: python Perceptron.py -a 1.4 -b -5 -c 13 --learn .005 --lowrange -100 --highrange=100')
-    print('   In this example, the perceptron solves for the inequality 1.4x -5y > 13')
+    print('   In this example, the perceptron solves for the inequality 1.4x -5y - 13 > 0')
     print('   Corrections to the weights are multiples of .005')
     print('   The range of randomly generated input data is [-100,100]')
-    print('   The perceptron will learn to classify random X,Y values according to whether they satisfy the inequality, 1.4x -5y + 13 > 0')
+    print('   The perceptron will learn to classify random X,Y values according to whether they satisfy the inequality, 1.4x -5y - 13 > 0')
     print('The program will terminate after it has guessed correctly 100 times in a row.')
     exit(2)
 
